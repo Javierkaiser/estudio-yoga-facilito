@@ -1,0 +1,10 @@
+.opencode/
+.hermes/skills/
+.codegraph/
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/
+*.log
