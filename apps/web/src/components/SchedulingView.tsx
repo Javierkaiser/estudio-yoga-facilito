@@ -569,7 +569,7 @@ export function SchedulingView({ onNotice }: SchedulingViewProps) {
                             )}
                             {session.waitlisted > 0 && (
                               <span className="waitlist-pill">
-                                {plural(session.waitlisted, 'en espera', 'en espera')}
+                                {session.waitlisted} en lista de espera
                               </span>
                             )}
                           </div>
@@ -686,8 +686,8 @@ export function SchedulingView({ onNotice }: SchedulingViewProps) {
           <div className="form">
             <p className="form-intro">
               Se devuelve un crédito a cada reserva confirmada. Las reservas en espera también se
-              cancelan, sin devolución. Cada persona afectada suma un aviso pendiente; no se envía
-              nada durante la operación.
+              cancelan, sin devolución. Cada persona afectada deja un aviso en la cola de envío; no
+              se envía nada durante la operación.
             </p>
 
             <div className="cancel-card">
@@ -697,8 +697,8 @@ export function SchedulingView({ onNotice }: SchedulingViewProps) {
               </span>
               <strong>{cancellingSession.instructor_name}</strong>
               <small>
-                {plural(cancellingSession.occupied, 'reserva ocupada', 'reservas ocupadas')} ·{' '}
-                {plural(cancellingSession.waitlisted, 'en espera', 'en espera')}
+                {plural(cancellingSession.occupied, 'reserva activa', 'reservas activas')} ·{' '}
+                {cancellingSession.waitlisted} en lista de espera
               </small>
             </div>
 
