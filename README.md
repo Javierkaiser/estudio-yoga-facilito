@@ -2,7 +2,7 @@
 
 Sistema de gestión para el estudio: saldo de clases auditable, cupo con lista de espera, portal del alumnado y panel de staff.
 
-El proyecto está en implementación incremental. Esta etapa cubre el esqueleto del monorepo, el esquema de base de datos, el ledger de créditos y una consola local para operarlo visualmente. La planificación completa está en [`openspec/changes/gestion-estudio-yoga/`](openspec/changes/gestion-estudio-yoga/).
+El proyecto está en implementación incremental. Esta etapa cubre el esqueleto del monorepo, el esquema de base de datos, el ledger de créditos, los horarios con generación de sesiones y cancelación de clase, y una consola local para operarlos visualmente. La planificación completa está en [`openspec/changes/gestion-estudio-yoga/`](openspec/changes/gestion-estudio-yoga/).
 
 ## Stack
 
@@ -70,6 +70,19 @@ La consola permite:
 
 Es una consola **de desarrollo**, sin autenticación. Las rutas `/api/dev/ledger/*` solo se registran cuando `NODE_ENV` no es `production`. El portal del alumnado y el panel de staff con roles siguen pendientes en el grupo 8.
 
+## Consola de clases
+
+La pestaña **Clases** de la misma consola permite:
+
+- Agregar instructoras demo en una base nueva.
+- Crear y editar plantillas semanales con día, hora local, duración, cupo e instructora.
+- Generar sesiones por rango de fechas sin duplicar las existentes.
+- Ver la agenda con ocupación, lugares disponibles y lista de espera.
+- Editar el cupo o la instructora de una sesión futura.
+- Cancelar una clase y ver cuántas devoluciones y avisos en cola generó.
+
+Las horas se editan y se muestran en `America/Argentina/Buenos_Aires`, pero se guardan en UTC. La guía completa está en [`docs/scheduling.md`](docs/scheduling.md). Los avisos quedan pendientes en la base: el worker de WhatsApp todavía no envía nada.
+
 ## Tests
 
 La suite usa una base separada, `estudio_yoga_test`, que se crea desde cero y se elimina al terminar. Si el contenedor de PostgreSQL no está corriendo, el harness intenta levantarlo con `podman compose` o `docker compose`; la imagen debe estar disponible localmente.
@@ -89,6 +102,8 @@ npm test -- tests/acceptance/ledger-append-only.test.ts
 npm test -- tests/db/triggers.test.ts
 npm test -- tests/db/constraints.test.ts
 npm test -- tests/config/env.test.ts
+npm test -- tests/scheduling
+npm test -- tests/acceptance/class-cancellation.test.ts
 ```
 
 La suite bloquea `fetch` para garantizar que no haya llamadas de red. No usa Meta, SMTP ni WhatsApp.
@@ -136,15 +151,15 @@ El build genera:
 
 ## Estado por capacidad
 
-| Capacidad | Estado |
-| --- | --- |
-| `credit-ledger` | Implementada con tests |
-| Esquema, migraciones y staff CLI | Implementados con tests |
-| Consola visual local del ledger | Implementada (solo desarrollo) |
-| `class-scheduling` | Pendiente |
-| `booking-lifecycle` | Pendiente |
-| `student-auth`, `student-portal`, `staff-console` | Pendientes |
-| `whatsapp-notifications` | Pendiente |
+| Capacidad                                         | Estado                                  |
+| ------------------------------------------------- | --------------------------------------- |
+| `credit-ledger`                                   | Implementada con tests                  |
+| Esquema, migraciones y staff CLI                  | Implementados con tests                 |
+| Consola visual local del ledger                   | Implementada (solo desarrollo)          |
+| `class-scheduling`                                | Implementada con tests y consola visual |
+| `booking-lifecycle`                               | Pendiente                               |
+| `student-auth`, `student-portal`, `staff-console` | Pendientes                              |
+| `whatsapp-notifications`                          | Pendiente                               |
 
 ## Deploy en Render
 
@@ -169,4 +184,5 @@ ln -s ../../skills/estudio-yoga-brand .opencode/skills/estudio-yoga-brand
 - [`docs/local-postgres.md`](docs/local-postgres.md)
 - [`docs/data-model.md`](docs/data-model.md)
 - [`docs/ledger.md`](docs/ledger.md)
+- [`docs/scheduling.md`](docs/scheduling.md)
 - [`openspec/changes/gestion-estudio-yoga/design.md`](openspec/changes/gestion-estudio-yoga/design.md)

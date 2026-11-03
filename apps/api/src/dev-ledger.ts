@@ -48,7 +48,7 @@ const idParams = z.object({
   id: z.string().uuid('Identificador inválido'),
 });
 
-async function getDevAdmin(pool: Pool): Promise<StaffActor> {
+export async function getDevAdmin(pool: Pool): Promise<StaffActor> {
   const existing = await queryOne<StaffUserRow>(
     pool,
     `SELECT *

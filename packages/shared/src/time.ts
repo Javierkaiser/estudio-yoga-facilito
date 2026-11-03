@@ -22,6 +22,7 @@ export function formatInStudio(
   const date = value instanceof Date ? value : new Date(value);
   return new Intl.DateTimeFormat('es-AR', {
     timeZone: STUDIO_TIMEZONE,
+    hourCycle: 'h23',
     ...options,
   }).format(date);
 }
@@ -31,7 +32,13 @@ export function formatDateInStudio(value: Date | string): string {
 }
 
 export function formatTimeInStudio(value: Date | string): string {
-  return formatInStudio(value, { timeStyle: 'short' });
+  const date = value instanceof Date ? value : new Date(value);
+  return new Intl.DateTimeFormat('es-AR', {
+    timeZone: STUDIO_TIMEZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(date);
 }
 
 export function addDays(value: Date, days: number): Date {

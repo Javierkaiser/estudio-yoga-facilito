@@ -97,6 +97,83 @@ export interface AdjustInput {
   reason: string;
 }
 
+export type SessionStatus = 'scheduled' | 'cancelled' | 'completed';
+
+export interface Instructor {
+  id: string;
+  name: string;
+  email: string;
+  role: 'instructor';
+  active: boolean;
+}
+
+export interface ClassTemplate {
+  id: string;
+  weekday: number;
+  start_time: string;
+  duration_minutes: number;
+  capacity: number;
+  instructor_id: string;
+  active: boolean;
+  created_at: string;
+  instructor_name: string;
+}
+
+export interface ClassSession {
+  id: string;
+  template_id: string | null;
+  starts_at: string;
+  duration_minutes: number;
+  capacity: number;
+  instructor_id: string;
+  status: SessionStatus;
+  cancelled_at: string | null;
+  cancelled_by_type: 'student' | 'staff' | 'system' | null;
+  cancelled_by_id: string | null;
+  created_at: string;
+  instructor_name: string;
+  occupied: number;
+  waitlisted: number;
+  available: number;
+}
+
+export interface SchedulingOverview {
+  templates: ClassTemplate[];
+  instructors: Instructor[];
+  sessions: ClassSession[];
+}
+
+export interface CreateTemplateInput {
+  weekday: number;
+  startTime: string;
+  durationMinutes: number;
+  capacity: number;
+  instructorId: string;
+}
+
+export type UpdateTemplateInput = Partial<CreateTemplateInput> & { active?: boolean };
+
+export interface GenerateSessionsInput {
+  from: string;
+  to: string;
+}
+
+export interface EditSessionInput {
+  capacity?: number;
+  instructorId?: string;
+}
+
+export interface EditSessionResult {
+  session: Omit<ClassSession, 'instructor_name' | 'occupied' | 'waitlisted' | 'available'>;
+  promoted: { id: string; status: string } | null;
+}
+
+export interface CancelClassResult {
+  refunded: number;
+  notified: number;
+  alreadyCancelled: boolean;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...init,
@@ -107,9 +184,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     },
   });
 
-  const body = (await response.json().catch(() => null)) as
-    | { message?: string; code?: string }
-    | null;
+  const body = (await response.json().catch(() => null)) as {
+    message?: string;
+    code?: string;
+  } | null;
 
   if (!response.ok) {
     throw new Error(body?.message ?? `La operación falló (${response.status})`);
@@ -153,6 +231,116 @@ export const ledgerApi = {
       method: 'POST',
     }),
 };
+
+export const schedulingApi = {
+  overview: () => request<SchedulingOverview>('/api/dev/scheduling/overview'),
+
+  demoInstructors: () =>
+    request<{ instructors: Instructor[] }>('/api/dev/scheduling/demo-instructors', {
+      method: 'POST',
+    }),
+
+  createTemplate: (input: CreateTemplateInput) =>
+    request<ClassTemplate>('/api/dev/scheduling/templates', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+
+  updateTemplate: (templateId: string, input: UpdateTemplateInput) =>
+    request<ClassTemplate>(`/api/dev/scheduling/templates/${templateId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+
+  generate: (templateId: string, input: GenerateSessionsInput) =>
+    request<{ created: number; skipped: number }>(
+      `/api/dev/scheduling/templates/${templateId}/generate`,
+      {
+        method: 'POST',
+        body: JSON.stringify(input),
+      },
+    ),
+
+  editSession: (sessionId: string, input: EditSessionInput) =>
+    request<EditSessionResult>(`/api/dev/scheduling/sessions/${sessionId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+
+  cancelSession: (sessionId: string) =>
+    request<CancelClassResult>(`/api/dev/scheduling/sessions/${sessionId}/cancel`, {
+      method: 'POST',
+    }),
+};
+
+const STUDIO_TIMEZONE = 'America/Argentina/Buenos_Aires';
+
+export const WEEKDAYS = [
+  { value: 1, label: 'Lunes' },
+  { value: 2, label: 'Martes' },
+  { value: 3, label: 'Miércoles' },
+  { value: 4, label: 'Jueves' },
+  { value: 5, label: 'Viernes' },
+  { value: 6, label: 'Sábado' },
+  { value: 7, label: 'Domingo' },
+] as const;
+
+export function weekdayLabel(value: number): string {
+  return WEEKDAYS.find((day) => day.value === value)?.label ?? '';
+}
+
+export function templateTimeLabel(value: string): string {
+  return value.slice(0, 5);
+}
+
+export function formatSessionTime(value: string): string {
+  return new Intl.DateTimeFormat('es-AR', {
+    timeZone: STUDIO_TIMEZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(new Date(value));
+}
+
+export function formatSessionDayLabel(value: string): string {
+  const label = new Intl.DateTimeFormat('es-AR', {
+    timeZone: STUDIO_TIMEZONE,
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(new Date(value));
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+export function sessionDayKey(value: string): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: STUDIO_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date(value));
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+export function studioTodayInput(): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: STUDIO_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+export function addDaysToInput(value: string, days: number): string {
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return value;
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
 
 export function formatDate(value: string | null): string {
   if (!value) {

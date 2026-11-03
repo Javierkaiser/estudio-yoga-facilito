@@ -4,9 +4,9 @@ Sistema de gestión para un estudio de yoga. Monorepo npm workspaces, Node.js 22
 
 ## Estado actual
 
-- Change activo: `openspec/changes/gestion-estudio-yoga` (schema `spec-driven`). Al escribir esto: **19/61 tareas** completas.
-- Implementado: monorepo, esquema/migraciones/triggers, ledger de créditos, staff CLI y consola visual de desarrollo.
-- **No implementado todavía**: scheduling, reservas/lista de espera/ofertas, auth, portal del alumnado, panel de staff y outbox de WhatsApp. Las tablas base existen, pero no los servicios ni endpoints. El worker es un stub.
+- Change activo: `openspec/changes/gestion-estudio-yoga` (schema `spec-driven`). Al escribir esto: **25/61 tareas** completas.
+- Implementado: monorepo, esquema/migraciones/triggers, ledger de créditos, staff CLI, horarios/sesiones/cancelación de clase y consola visual de desarrollo con las vistas Créditos y Clases.
+- **No implementado todavía**: reservas/lista de espera/ofertas completas, auth, portal del alumnado, panel de staff y outbox de WhatsApp. Las tablas base existen, pero faltan los servicios y endpoints. El worker es un stub.
 - Antes de asumir una capacidad, revisar `openspec status --change gestion-estudio-yoga --json` y `openspec instructions apply --change gestion-estudio-yoga --json`. Las specs describen el objetivo, no necesariamente lo ya construido.
 
 ## Comandos

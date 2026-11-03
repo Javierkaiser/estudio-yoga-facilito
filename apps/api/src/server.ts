@@ -6,6 +6,7 @@ import type { Pool } from 'pg';
 import { ZodError } from 'zod';
 import { DomainError } from '../../../packages/core/src/errors';
 import { registerDevLedgerRoutes } from './dev-ledger';
+import { registerDevSchedulingRoutes } from './dev-scheduling';
 
 export interface ServerOptions {
   enableDevRoutes?: boolean;
@@ -19,6 +20,7 @@ export function buildServer(pool: Pool, options: ServerOptions = {}): FastifyIns
 
   if (options.enableDevRoutes !== false) {
     registerDevLedgerRoutes(app, pool);
+    registerDevSchedulingRoutes(app, pool);
   }
 
   const webRoot = resolve(process.cwd(), 'apps/web/dist');
