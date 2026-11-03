@@ -146,6 +146,15 @@ El build genera:
 | `student-auth`, `student-portal`, `staff-console` | Pendientes |
 | `whatsapp-notifications` | Pendiente |
 
+## Deploy en Render
+
+El repo incluye `render.yaml` para una demo con PostgreSQL free. La app se sirve desde la API (sin CORS ni dos hosts).
+
+- Guía: [`docs/render.md`](docs/render.md)
+- En Render: **New → Blueprint**, elegir el repo y aplicar.
+- La demo usa `NODE_ENV=development` para habilitar la consola del ledger; no tiene autenticación.
+- El PostgreSQL free de Render expira a los 30 días; el web service free duerme a los 15 minutos.
+
 ## Skills del proyecto
 
 La skill de marca vive en [`skills/estudio-yoga-brand/SKILL.md`](skills/estudio-yoga-brand/SKILL.md), dentro del árbol del proyecto y fuera de las rutas ignoradas por Git. OpenCode la descubre a través de `.opencode/skills/estudio-yoga-brand`, un enlace simbólico local. Si clonás el proyecto, recreá el enlace:

@@ -8,8 +8,8 @@ const pool = createPool(env.DATABASE_URL);
 const app = buildServer(pool, { enableDevRoutes: env.NODE_ENV !== 'production' });
 
 try {
-  await app.listen({ port: env.PORT, host: '127.0.0.1' });
-  console.log(`API escuchando en http://localhost:${env.PORT}`);
+  await app.listen({ port: env.PORT, host: env.HOST });
+  console.log(`API escuchando en http://${env.HOST}:${env.PORT}`);
 } catch (error) {
   console.error(error);
   await pool.end();
